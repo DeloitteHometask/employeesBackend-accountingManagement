@@ -5,10 +5,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.time.temporal.ChronoUnit;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.junit.jupiter.api.AfterAll;
@@ -30,7 +28,7 @@ import employees.spring.service.AccountServiceImpl;
 
 @ExtendWith(MockitoExtension.class)
 @TestPropertySource(properties = { "app.security.admin.password=ppp",
-		"app.security.accounts.file.name=test.data", "logging.level.telran=debug" })
+		"app.security.accounts.file.name=test.data", "logging.level.employees=debug" })
 public class AccountingServiceTest {
 
     @Mock
