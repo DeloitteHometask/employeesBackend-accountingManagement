@@ -1,0 +1,27 @@
+{"properties": [
+  {
+    "name": "app.accounts.admin.password",
+    "type": "java.lang.String",
+    "description": "Password for root admin"
+  },
+  {
+    "name": "app.accounts.file.name",
+    "type": "java.lang.String",
+    "description": "File name for saving data"
+  },
+  {
+    "name": "app.security.admin.password",
+    "type": "java.lang.String",
+    "description": "Password for root admin"
+  },
+  {
+    "name": "app.jwt.signature.secret",
+    "type": "java.lang.String",
+    "description": "Secret for encode data"
+  },
+  {
+    "name": "app.security.jwt.expiration.period",
+    "type": "java.lang.String",
+    "description": "Period for expiration secter for encode data"
+  }
+]}
