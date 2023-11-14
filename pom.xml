@@ -52,30 +52,10 @@
 		</dependency>
 		<dependency>
 			<groupId>employees.spring</groupId>
-			<artifactId>employees-hometask-exceptions-handler</artifactId>
-			<version>0.0.1</version>
+	<artifactId>employees-hometask-exceptions-handler</artifactId>
+	<version>0.0.1</version>
 		</dependency>
 
 	</dependencies>
-
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.springframework.boot</groupId>
-				<artifactId>spring-boot-maven-plugin</artifactId>
-				<configuration>
-					<image>
-						<builder>paketobuildpacks/builder-jammy-base:latest</builder>
-					</image>
-					<excludes>
-						<exclude>
-							<groupId>org.projectlombok</groupId>
-							<artifactId>lombok</artifactId>
-						</exclude>
-					</excludes>
-				</configuration>
-			</plugin>
-		</plugins>
-	</build>
 
 </project>
