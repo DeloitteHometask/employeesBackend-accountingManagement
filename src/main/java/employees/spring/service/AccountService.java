@@ -8,5 +8,8 @@ public interface AccountService {
 	Account addAccount(Account account);
 
 	public boolean isAccountExist(String username);
+	
+    void updateAccount(Account account);
+
 
 }

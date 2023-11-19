@@ -1,3 +1,5 @@
+package employees.spring.service;
+
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
@@ -31,8 +33,8 @@ public class MongoChangeService {
     }
 
     private void subscribeToAccountChanges() {
-        MongoDatabase database = mongoClient.getDatabase("yourDatabase");
-        MongoCollection<Document> collection = database.getCollection("yourCollection");
+        MongoDatabase database = mongoClient.getDatabase("employees_hometask");
+        MongoCollection<Document> collection = database.getCollection("accounts");
 
         collection.watch().forEach(this::processChange);
     }

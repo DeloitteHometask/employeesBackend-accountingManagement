@@ -29,7 +29,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class AccountServiceImpl implements AccountService {
 	
-	private static final long UPDATE_FREQUENCY = 300000;
 	final PasswordEncoder passwordEncoder;
 	final AccountsRepository accountsRepository;
     final AccountProvider provider;
@@ -107,21 +106,23 @@ public class AccountServiceImpl implements AccountService {
 	        }
 	}
 	
-	 @Scheduled(fixedRate = UPDATE_FREQUENCY)
 	    public void updateAccounts() {
 	        log.info("Checking for account updates...");
 	        try {
 	            List<Account> updatedAccounts = accountsRepository.findAll();
-	            updatedAccounts.forEach(account -> {
-	                Account existingAccount = accounts.get(account.getUsername());
-	                if (existingAccount == null || !existingAccount.equals(account)) {
-	                    log.info("Updating account: {}", account.getUsername());
-	                    accounts.put(account.getUsername(), account);
-	                    accountsRepository.save(account);
-	                }
-	            });
+	            updatedAccounts.forEach(this::updateAccount);
 	        } catch (Exception e) {
 	            log.error("Failed to update accounts", e);
 	        }
 	    }
+
+		@Override
+		public void updateAccount(Account account) {
+			Account existingAccount = accounts.get(account.getUsername());
+            if (existingAccount == null || !existingAccount.equals(account)) {
+                log.info("Updating account: {}", account.getUsername());
+                accounts.put(account.getUsername(), account);
+                accountsRepository.save(account);
+            }
+		}
 }

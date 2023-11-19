@@ -41,6 +41,11 @@ class AccountServiceMock implements AccountService {
 	public boolean isAccountExist(String username) {
 		return true;
 	}
+
+	@Override
+	public void updateAccount(Account account) {
+		
+	}
 }
 
 @WebMvcTest({AccountController.class, AccountServiceMock.class, SecurityConfiguration.class})
