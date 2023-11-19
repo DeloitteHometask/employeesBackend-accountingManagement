@@ -1,94 +1,70 @@
 package employees.spring;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.any;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.concurrent.ConcurrentHashMap;
-
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.provisioning.UserDetailsManager;
-import org.springframework.test.context.TestPropertySource;
+import java.util.Optional;
 
 import employees.spring.repository.AccountsRepository;
 import employees.spring.security.dto.Account;
 import employees.spring.service.AccountServiceImpl;
 
 @ExtendWith(MockitoExtension.class)
-@TestPropertySource(properties = { "app.security.admin.password=ppp",
-		"app.security.accounts.file.name=test.data", "logging.level.employees=debug" })
 public class AccountingServiceTest {
 
-    @Mock
-    private ConcurrentHashMap<String, Account> accounts;
     @Mock
     private AccountsRepository accountsRepository;
     @Mock
     private PasswordEncoder passwordEncoder;
-    @Mock
-    private UserDetailsManager manager;
 
     @InjectMocks
     private AccountServiceImpl service;
-    
+
     @BeforeEach
-    void setUp() throws NoSuchFieldException, IllegalAccessException {
-    	MockitoAnnotations.openMocks(this);
+    void setUp() {
     }
-
-	@AfterAll
-	static void deleteFileAfter() throws IOException {
-		Files.deleteIfExists(Path.of("test.data"));
-	}
-
-	@BeforeAll
-	static void deleteFileBefore() throws IOException {
-		Files.deleteIfExists(Path.of("test.data"));
-	}
     
     @Test
     void testGetAccountSuccess() {
         Account expectedAccount = new Account("testUser", "password", new String[]{"USER"});
-        when(accounts.get("testUser")).thenReturn(expectedAccount);
+        when(accountsRepository.findById("testUser")).thenReturn(Optional.of(expectedAccount));
         Account result = service.getAccount("testUser");
         assertEquals(expectedAccount, result);
     }
 
     @Test
     void testGetAccountNotFound() {
-        when(accounts.get("unknownUser")).thenReturn(null);
+        when(accountsRepository.findById("unknownUser")).thenReturn(Optional.empty());
         assertThrows(NotFoundException.class, () -> service.getAccount("unknownUser"));
     }
 
     @Test
     void testAddAccountUserExists() {
         Account existingAccount = new Account("existingUser", "password", new String[]{"USER"});
-        when(manager.userExists("existingUser")).thenReturn(true);
+        when(accountsRepository.findById("existingUser")).thenReturn(Optional.of(existingAccount));
         assertThrows(IllegalStateException.class, () -> service.addAccount(existingAccount));
     }
 
     @Test
-    void testAddAccountSynchronizationError() {
+    void testAddAccountSuccess() {
         Account newAccount = new Account("newUser", "password", new String[]{"USER"});
-        when(manager.userExists("newUser")).thenReturn(false);
-        when(accounts.containsKey("newUser")).thenReturn(true);
-        assertThrows(RuntimeException.class, () -> service.addAccount(newAccount));
+        when(accountsRepository.findById("newUser")).thenReturn(Optional.empty());
+        when(passwordEncoder.encode(newAccount.getPassword())).thenReturn("encodedPassword");
+        
+        Account expectedAccount = new Account("newUser", "encodedPassword", new String[]{"USER"});
+        when(accountsRepository.save(any())).thenReturn(expectedAccount);
+
+        Account result = service.addAccount(newAccount);
+        assertEquals(expectedAccount.getUsername(), result.getUsername());
+        assertEquals(expectedAccount.getPassword(), result.getPassword());
+        assertArrayEquals(expectedAccount.getRoles(), result.getRoles());
     }
-
-
-
-
-  
 }

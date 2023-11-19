@@ -8,12 +8,14 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 
 
 @Data
 @Document(collection="accounts")
 @TypeAlias("account")
+@AllArgsConstructor
 public class Account implements Serializable {
 
 	private static final long serialVersionUID = -5361662414272788142L;

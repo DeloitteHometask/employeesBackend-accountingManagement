@@ -1,5 +1,7 @@
 package employees.spring.service;
 
+import java.util.List;
+
 import employees.spring.security.dto.Account;
 
 public interface AccountService {
@@ -8,5 +10,7 @@ public interface AccountService {
 	Account addAccount(Account account);
 
 	public boolean isAccountExist(String username);
+	
+	List<Account> getAllAccounts();
 
 }
