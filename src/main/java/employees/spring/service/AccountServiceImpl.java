@@ -3,8 +3,12 @@ package employees.spring.service;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -25,11 +29,14 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class AccountServiceImpl implements AccountService {
 	
+	private static final long UPDATE_FREQUENCY = 300000;
 	final PasswordEncoder passwordEncoder;
 	final AccountsRepository accountsRepository;
     final AccountProvider provider;
     
 	ConcurrentHashMap<String, Account> accounts = new ConcurrentHashMap<>();
+    private final ExecutorService executorService = Executors.newFixedThreadPool(10);
+
 	
 	@Autowired
 	UserDetailsManager manager;
@@ -82,12 +89,39 @@ public class AccountServiceImpl implements AccountService {
 	
 	@PostConstruct
 	void restoreAccounts() {
-		List<Account> listAccounts = provider.getAccounts();
+		List<Account> listAccounts = provider.getAccounts(); 
 		listAccounts.forEach(a -> createUser(a));
+		updateAccounts();
 	}
 
 	@PreDestroy
 	void saveAccounts() {
 		provider.setAccounts(new LinkedList<>(accounts.values()));
+		  executorService.shutdown();
+	        try {
+	            if (!executorService.awaitTermination(800, TimeUnit.MILLISECONDS)) {
+	                executorService.shutdownNow();
+	            } 
+	        } catch (InterruptedException e) {
+	            executorService.shutdownNow();
+	        }
 	}
+	
+	 @Scheduled(fixedRate = UPDATE_FREQUENCY)
+	    public void updateAccounts() {
+	        log.info("Checking for account updates...");
+	        try {
+	            List<Account> updatedAccounts = accountsRepository.findAll();
+	            updatedAccounts.forEach(account -> {
+	                Account existingAccount = accounts.get(account.getUsername());
+	                if (existingAccount == null || !existingAccount.equals(account)) {
+	                    log.info("Updating account: {}", account.getUsername());
+	                    accounts.put(account.getUsername(), account);
+	                    accountsRepository.save(account);
+	                }
+	            });
+	        } catch (Exception e) {
+	            log.error("Failed to update accounts", e);
+	        }
+	    }
 }

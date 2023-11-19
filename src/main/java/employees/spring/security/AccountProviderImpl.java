@@ -26,6 +26,7 @@ public class AccountProviderImpl implements AccountProvider {
 				res = (List<Account>) stream.readObject();
 				log.info("accounts have been restored from the file {}", fileName);
 			} catch (Exception e) {
+	            log.error("Error during restoring from file {}: {}", fileName, e.getMessage());
 				throw new RuntimeException(String.format
 						("error %s during restoring from file %s", e.toString(), fileName));
 			} 
@@ -39,6 +40,7 @@ public class AccountProviderImpl implements AccountProvider {
 			stream.writeObject(accounts);
 			log.info(" {} accounts have been saved to the file {}", accounts.size(),fileName);
 		}catch (Exception e) {
+		    log.error("Error during saving to file {}: {}", fileName, e.getMessage());
 			throw new RuntimeException(String.format
 					("error %s during saving to file %s", e.toString(), fileName));
 		}
