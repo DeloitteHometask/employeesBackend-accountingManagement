@@ -34,8 +34,6 @@ public class AccountServiceImpl implements AccountService {
     final AccountProvider provider;
     
 	ConcurrentHashMap<String, Account> accounts = new ConcurrentHashMap<>();
-    private final ExecutorService executorService = Executors.newFixedThreadPool(10);
-
 	
 	@Autowired
 	UserDetailsManager manager;
@@ -96,14 +94,6 @@ public class AccountServiceImpl implements AccountService {
 	@PreDestroy
 	void saveAccounts() {
 		provider.setAccounts(new LinkedList<>(accounts.values()));
-		  executorService.shutdown();
-	        try {
-	            if (!executorService.awaitTermination(800, TimeUnit.MILLISECONDS)) {
-	                executorService.shutdownNow();
-	            } 
-	        } catch (InterruptedException e) {
-	            executorService.shutdownNow();
-	        }
 	}
 	
 	    public void updateAccounts() {
@@ -120,9 +110,17 @@ public class AccountServiceImpl implements AccountService {
 		public void updateAccount(Account account) {
 			Account existingAccount = accounts.get(account.getUsername());
             if (existingAccount == null || !existingAccount.equals(account)) {
-                log.info("Updating account: {}", account.getUsername());
-                accounts.put(account.getUsername(), account);
-                accountsRepository.save(account);
+               log.info("Updating account: {}", account.getUsername());
+               updateUser(account); 
             }
+		}
+		
+		private void updateUser(Account user) {
+			accounts.put(user.getUsername(), user);
+			if(manager.userExists(user.getUsername())) {
+				manager.updateUser(createUserDetails(user));
+			} else {
+				manager.createUser(createUserDetails(user));
+			}
 		}
 }
